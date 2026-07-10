@@ -353,6 +353,7 @@ sequenceDiagram
 Business Logic    → @Service
 คุย Database      → @Repository, @Entity, @Id
 Inject Bean       → constructor injection (หรือ @Autowired)
+วงจรชีวิต Bean     → @PostConstruct, @PreDestroy, @Scope
 ตรวจสอบข้อมูล     → @Valid, @NotBlank, @Email
 จัดการ Error      → @RestControllerAdvice, @ExceptionHandler
 อ่าน Config       → @Value, @ConfigurationProperties
@@ -745,6 +746,132 @@ flowchart TD
 
 ในงานจริง REST API มักใช้ **JWT (JSON Web Token)**: login ครั้งเดียวได้ token
 แล้วแนบ token ใน header `Authorization: Bearer <token>` ทุก request — เป็นหัวข้อถัดไปที่ควรศึกษาต่อ
+
+---
+
+## 11. เจาะลึก Bean — ทำงานยังไงกันแน่?
+
+> ต่อยอดจากข้อ 4.4 — เข้าใจ Bean แล้วจะเข้าใจว่าทำไม annotation ทั้งหมดถึงทำงานได้
+
+### 11.1 Bean คืออะไร?
+
+**Bean = object ที่ Spring เป็นคนสร้างและดูแลให้** แทนที่เราจะ `new` เอง
+
+```java
+// ❌ Java ธรรมดา — สร้างเองทุกตัว จัดการเองว่าใครต้องใช้ใคร
+UserRepository repo = new UserRepository();
+UserService service = new UserService(repo);
+UserController controller = new UserController(service);
+
+// ✅ Spring — แค่ติด annotation แล้ว Spring สร้าง + เชื่อมให้เองทั้งหมด
+@Service
+public class UserService { ... }
+```
+
+Object พวกนี้ถูกเก็บไว้ในตู้กลางชื่อ **ApplicationContext** (หรือเรียกว่า **IoC Container**)
+
+> 💡 **IoC (Inversion of Control) = การกลับด้านของการควบคุม**
+> จากเดิม "โค้ดเราควบคุมการสร้าง object" → กลายเป็น "Spring ควบคุมให้ เราแค่ประกาศว่าต้องการอะไร"
+
+### 11.2 วงจรชีวิตของ Bean (Bean Lifecycle)
+
+```mermaid
+flowchart TD
+    Start(["🚀 SpringApplication.run"])
+    Scan["1️⃣ สแกน<br/><small>@ComponentScan หา class ที่ติด @Component/@Service/...<br/>และอ่าน @Bean method ใน @Configuration</small>"]
+    Create["2️⃣ สร้าง object<br/><small>Spring เรียก constructor ให้</small>"]
+    Inject["3️⃣ ฉีด dependency<br/><small>ดูว่า constructor ต้องการ Bean อะไร แล้วหยิบจากตู้มาใส่ให้<br/>ถ้ายังไม่ถูกสร้าง → สร้างตัวนั้นก่อน แบบลูกโซ่</small>"]
+    Post["4️⃣ @PostConstruct<br/><small>รัน method เตรียมของ เช่น โหลด cache</small>"]
+    Ready["5️⃣ ✅ พร้อมใช้งาน<br/><small>อยู่ในตู้ ApplicationContext ใครขอก็หยิบตัวเดิมไปให้</small>"]
+    Destroy["6️⃣ @PreDestroy<br/><small>แอปกำลังปิด → รัน method เก็บกวาด เช่น ปิด connection</small>"]
+    End(["🛑 แอปปิด"])
+
+    Start --> Scan --> Create --> Inject --> Post --> Ready
+    Ready -->|แอปได้รับคำสั่งปิด| Destroy --> End
+```
+
+```java
+@Service
+public class CacheService {
+
+    @PostConstruct          // รันครั้งเดียว หลัง Bean สร้างเสร็จและฉีด dependency ครบแล้ว
+    public void warmUp() {
+        System.out.println("โหลดข้อมูลเข้า cache...");
+    }
+
+    @PreDestroy             // รันครั้งเดียว ตอนแอปกำลังปิด
+    public void cleanUp() {
+        System.out.println("เคลียร์ cache ก่อนปิดแอป");
+    }
+}
+```
+
+### 11.3 Bean เป็น Singleton — จุดที่มือใหม่พลาดบ่อยสุด
+
+โดย default **Bean แต่ละชนิดถูกสร้างแค่ตัวเดียวทั้งแอป** แล้วทุกคนใช้ตัวเดิมร่วมกัน
+`UserService` ที่ถูกฉีดเข้า Controller A กับ Controller B คือ **object ตัวเดียวกันเป๊ะ ๆ**
+
+ผลที่ตามมา: **ห้ามเก็บ state ของ user ไว้ใน field ของ Bean** เพราะทุก request แชร์ตัวแปรเดียวกัน — พอมีคนใช้พร้อมกันข้อมูลจะตีกันทันที
+
+```java
+@Service
+public class OrderService {
+
+    private User currentUser;   // ❌ อันตราย! ทุก request แชร์ field นี้ร่วมกัน
+
+    public BigDecimal calculate(User user, List<Item> items) {  // ✅ รับผ่าน parameter แทน
+        ...
+    }
+}
+```
+
+ถ้าต้องการเปลี่ยนพฤติกรรม ใช้ `@Scope`:
+
+| Scope | ความหมาย |
+|---|---|
+| `singleton` (default) | ตัวเดียวทั้งแอป |
+| `prototype` | สร้างใหม่ทุกครั้งที่มีคนขอ |
+| `request` | ตัวใหม่ต่อ 1 HTTP request |
+| `session` | ตัวใหม่ต่อ 1 user session |
+
+```java
+@Service
+@Scope("prototype")   // ขอเมื่อไหร่ ได้ตัวใหม่เมื่อนั้น
+public class ReportGenerator { ... }
+```
+
+### 11.4 Spring รู้ได้ยังไงว่าต้องฉีด Bean ตัวไหน?
+
+ดูจาก **ชนิด (type)** ของ parameter ใน constructor เป็นหลัก:
+
+```mermaid
+flowchart TD
+    Q["Spring เห็น constructor<br/>ต้องการ Bean ชนิดหนึ่ง"]
+    One{"เจอ Bean<br/>ชนิดนั้นกี่ตัว?"}
+    A["✅ ฉีดให้เลย"]
+    B["ดู @Primary หรือ @Qualifier ประกอบ<br/><small>ถ้าไม่มี → error ตอน start</small>"]
+    C["❌ แอปสตาร์ทไม่ขึ้น<br/><small>required a bean of type '...'<br/>that could not be found</small>"]
+
+    Q --> One
+    One -->|"1 ตัว"| A
+    One -->|"หลายตัว"| B
+    One -->|"ไม่เจอเลย"| C
+```
+
+### 11.5 Error ยอดฮิตเกี่ยวกับ Bean
+
+| Error | สาเหตุส่วนใหญ่ | วิธีแก้ |
+|---|---|---|
+| `required a bean of type '...' that could not be found` | ลืมติด `@Service`/`@Component` หรือ class อยู่**นอก** package ที่ถูกสแกน | ติด annotation / ย้าย class มาอยู่ใต้ package เดียวกับ main class |
+| `expected single matching bean but found 2` | interface เดียวมีหลาย implementation | ใส่ `@Primary` ให้ตัวหลัก หรือ `@Qualifier("ชื่อ")` ตอนฉีด |
+| `The dependencies of some of the beans form a cycle` | Circular dependency — A ต้องการ B และ B ต้องการ A | ปรับ design: แยก logic ที่ทับกันออกมาเป็น Bean ตัวที่สาม |
+
+### สรุปสั้น ๆ
+
+> **Bean = object ที่ Spring สร้าง เก็บ และฉีดให้**
+> - ตัวเดียวแชร์กันทั้งแอป (singleton) → ห้ามเก็บ state ต่อ user ใน field
+> - แทรกโค้ดตอนเกิด/ตายได้ด้วย `@PostConstruct` / `@PreDestroy`
+> - Spring เลือกตัวฉีดจากชนิด (type) — ซ้ำเมื่อไหร่ใช้ `@Primary`/`@Qualifier` ช่วยชี้
 
 ---
 
