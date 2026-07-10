@@ -357,7 +357,9 @@ Inject Bean       → constructor injection (หรือ @Autowired)
 จัดการ Error      → @RestControllerAdvice, @ExceptionHandler
 อ่าน Config       → @Value, @ConfigurationProperties
 ความสัมพันธ์ตาราง  → @OneToMany, @ManyToOne, @JoinColumn
-เขียน Test        → @SpringBootTest, @WebMvcTest, @DataJpaTest, @MockitoBean
+เขียน Test        → @Test, @BeforeEach, @Mock/@InjectMocks (JUnit/Mockito)
+                    @SpringBootTest, @WebMvcTest, @DataJpaTest, @MockitoBean (Spring)
+                    @ActiveProfiles, @WithMockUser (สภาพแวดล้อม/Security)
 Security          → @EnableWebSecurity, @PreAuthorize
 ```
 
@@ -537,6 +539,120 @@ flowchart TD
     Q -->|query ใน Repository ถูกไหม| C
     Q -->|ทั้งระบบทำงานร่วมกันถูกไหม| D
 ```
+
+### 9.4 Annotation ฝั่งเทสทั้งหมด (ไม่ได้มีแค่ @MockitoBean!)
+
+annotation ที่ใช้ในไฟล์เทสมาจาก 3 ที่: **JUnit 5** (ควบคุมการรันเทส), **Mockito** (สร้างตัวปลอม), และ **Spring** (ปรับสภาพแวดล้อมเทส)
+
+#### กลุ่มที่ 1: JUnit 5 — ควบคุมการรันเทส
+
+| Annotation | ความหมาย |
+|---|---|
+| `@Test` | method นี้คือเทส 1 เคส |
+| `@BeforeEach` / `@AfterEach` | รันก่อน/หลังเทส **ทุกเคส** (เตรียม/เคลียร์ข้อมูล) |
+| `@BeforeAll` / `@AfterAll` | รันครั้งเดียวก่อน/หลังเทส **ทั้ง class** |
+| `@DisplayName("...")` | ตั้งชื่อเทสให้อ่านง่าย |
+| `@Disabled` | ข้ามเทสนี้ชั่วคราว |
+| `@ParameterizedTest` + `@ValueSource` | รันเทสเดิมซ้ำด้วยข้อมูลหลายชุด |
+
+```java
+class CalculatorTest {
+
+    @BeforeEach
+    void setUp() { ... }  // รันก่อนทุก @Test
+
+    @Test
+    @DisplayName("บวกเลขสองตัวได้ผลถูกต้อง")
+    void addsTwoNumbers() { ... }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 5, 100})   // รัน 3 รอบด้วยค่า 1, 5, 100
+    void acceptsPositiveNumbers(int value) { ... }
+}
+```
+
+#### กลุ่มที่ 2: Mockito ล้วน ๆ — เทส Service โดยไม่โหลด Spring (เร็วสุด)
+
+| Annotation | ความหมาย |
+|---|---|
+| `@ExtendWith(MockitoExtension.class)` | เปิดใช้ Mockito กับ JUnit 5 |
+| `@Mock` | สร้าง object ปลอม |
+| `@InjectMocks` | สร้าง object จริงที่จะเทส แล้วยัด mock เข้าไปให้ |
+
+```java
+@ExtendWith(MockitoExtension.class)   // ไม่มี Spring context เลย — รันเร็วมาก
+class UserServiceTest {
+
+    @Mock
+    UserRepository userRepository;     // ตัวปลอม
+
+    @InjectMocks
+    UserService userService;           // ตัวจริงที่เทส (Mockito ยัด mock ให้)
+
+    @Test
+    void findById_returnsUser() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(new User(1L, "John")));
+
+        User result = userService.findById(1L);
+
+        assertThat(result.getName()).isEqualTo("John");
+    }
+}
+```
+
+> 💡 **`@Mock` vs `@MockitoBean` ต่างกันยังไง?**
+> - `@Mock` — ใช้ตอน**ไม่มี** Spring context (เทสแบบกลุ่มนี้)
+> - `@MockitoBean` — ใช้ตอน**มี** Spring context (เช่นใน `@WebMvcTest`) — มันเข้าไป**แทนที่ Bean จริง**ในตู้ ApplicationContext
+
+#### กลุ่มที่ 3: Spring — ปรับสภาพแวดล้อมเทส
+
+| Annotation | ความหมาย |
+|---|---|
+| `@MockitoBean` | แทนที่ Bean จริงใน context ด้วยตัวปลอม |
+| `@MockitoSpyBean` | ใช้ Bean จริง แต่ override เฉพาะบาง method ได้ |
+| `@ActiveProfiles("test")` | รันเทสด้วย profile test (ใช้ `application-test.properties`) |
+| `@TestPropertySource` | override ค่า config เฉพาะเทสนี้ |
+| `@Sql("/seed-data.sql")` | รันสคริปต์ SQL เตรียมข้อมูลก่อนเทส |
+| `@Transactional` (บนเทส) | ทุกเคส rollback อัตโนมัติหลังจบ — ข้อมูลไม่ค้างใน DB |
+| `@AutoConfigureMockMvc` | ใช้ MockMvc ร่วมกับ `@SpringBootTest` ได้ |
+| `@TestConfiguration` | ประกาศ Bean เฉพาะสำหรับเทส |
+| `@DirtiesContext` | สร้าง context ใหม่หลังเทสนี้ (ใช้เมื่อเทสไปแก้ state ของ Bean) |
+
+#### กลุ่มที่ 4: เทสเฉพาะทาง
+
+| Annotation | ความหมาย |
+|---|---|
+| `@JsonTest` | เทสการแปลง JSON อย่างเดียว |
+| `@RestClientTest` | เทส class ที่ยิง API ออกไปข้างนอก (มี mock server ให้) |
+| `@WithMockUser(roles = "ADMIN")` | จำลอง user ที่ login แล้ว — ใช้เทสร่วมกับ Spring Security |
+| `@Testcontainers` + `@ServiceConnection` | รัน database จริง (PostgreSQL, Redis) ใน Docker ตอนเทส |
+
+```java
+// ตัวอย่าง: เทส endpoint ที่ล็อกไว้เฉพาะ ADMIN
+@WebMvcTest(AdminController.class)
+class AdminControllerTest {
+
+    @Autowired MockMvc mockMvc;
+
+    @Test
+    @WithMockUser(roles = "ADMIN")   // จำลองว่า login เป็น ADMIN แล้ว
+    void adminCanAccess() throws Exception {
+        mockMvc.perform(get("/api/admin/stats"))
+               .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")    // USER ธรรมดาต้องโดน 403
+    void userIsForbidden() throws Exception {
+        mockMvc.perform(get("/api/admin/stats"))
+               .andExpect(status().isForbidden());
+    }
+}
+```
+
+> 📌 หมายเหตุ: `@Autowired` ในไฟล์เทสไม่ใช่ annotation พิเศษของการเทส — มันคือการขอ Bean จาก Spring ตามปกติ แค่ในเทสต้องใช้กับ field เพราะ JUnit เป็นคนสร้าง class เทสเอง ไม่ได้สร้างผ่าน constructor ของ Spring
+
+**ชุดที่ใช้บ่อยจริงในงาน:** `@Test`, `@BeforeEach`, `@Mock`/`@InjectMocks` (เทส Service), `@MockitoBean` + MockMvc (เทส Controller), `@ActiveProfiles("test")` และ `@WithMockUser` เมื่อมี Security
 
 ---
 
