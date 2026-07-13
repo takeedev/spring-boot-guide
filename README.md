@@ -353,6 +353,7 @@ sequenceDiagram
 Business Logic    → @Service
 คุย Database      → @Repository, @Entity, @Id
 Inject Bean       → constructor injection (หรือ @Autowired)
+Bean ชนิดซ้ำกัน    → @Qualifier("ชื่อ") ที่จุดฉีด, @Primary ที่ตัว default
 วงจรชีวิต Bean     → @PostConstruct, @PreDestroy, @Scope
 Transaction       → @Transactional (readOnly, rollbackFor, propagation)
 งานตามเวลา/เบื้องหลัง → @Scheduled, @Async (+ @EnableScheduling, @EnableAsync)
@@ -863,7 +864,149 @@ flowchart TD
     One -->|"ไม่เจอเลย"| C
 ```
 
-### 11.5 Error ยอดฮิตเกี่ยวกับ Bean
+### 11.5 @Qualifier — ชี้ตัว Bean ด้วยชื่อ เมื่อชนิดซ้ำกัน
+
+#### ปัญหา: interface เดียว มีหลาย implementation
+
+```java
+public interface NotificationSender {
+    void send(String to, String message);
+}
+
+@Service
+public class EmailSender implements NotificationSender { ... }
+
+@Service
+public class SmsSender implements NotificationSender { ... }
+```
+
+พอมีคนขอ `NotificationSender` — Spring เจอ 2 ตัว เลือกไม่ได้ แอปสตาร์ทไม่ขึ้น:
+
+```
+expected single matching bean but found 2: emailSender,smsSender
+```
+
+#### กุญแจสำคัญ: Bean ทุกตัวมี "ชื่อ"
+
+ถ้าไม่ตั้งเอง Spring ใช้ชื่อ class แบบตัวแรกเป็นตัวเล็ก:
+
+```
+EmailSender  →  ชื่อ Bean = "emailSender"
+SmsSender    →  ชื่อ Bean = "smsSender"
+```
+
+`@Qualifier("ชื่อ")` ที่จุดฉีด = บอกว่า "ฉันขอตัวนี้เท่านั้น":
+
+```java
+@Service
+public class OrderService {
+    private final NotificationSender sender;
+
+    public OrderService(@Qualifier("emailSender") NotificationSender sender) {
+        this.sender = sender;      // ✅ ได้ EmailSender แน่นอน
+    }
+}
+```
+
+ตั้งชื่อเองให้สั้นและสื่อความหมายกว่าก็ได้:
+
+```java
+@Service("email")   // ตั้งชื่อ Bean ว่า "email"
+public class EmailSender implements NotificationSender { ... }
+
+// ตอนฉีด
+public OrderService(@Qualifier("email") NotificationSender sender) { ... }
+```
+
+ใช้กับ `@Bean` method ได้เหมือนกัน (ชื่อ Bean = ชื่อ method):
+
+```java
+@Configuration
+public class AppConfig {
+    @Bean public RestClient paymentClient() { ... }    // ชื่อ Bean = "paymentClient"
+    @Bean public RestClient shippingClient() { ... }   // ชื่อ Bean = "shippingClient"
+}
+
+@Service
+public class PaymentService {
+    public PaymentService(@Qualifier("paymentClient") RestClient client) { ... }
+}
+```
+
+#### Flow การตัดสินใจของ Spring ทั้งหมด
+
+```mermaid
+flowchart TD
+    Start["Spring จะฉีด Bean<br/>ชนิด NotificationSender"]
+    Count{"เจอ Bean<br/>ชนิดนี้กี่ตัว?"}
+    Zero["❌ สตาร์ทไม่ขึ้น<br/><small>required a bean of type '...'<br/>that could not be found</small>"]
+    One["✅ ฉีดตัวเดียวที่เจอ"]
+    HasQ{"จุดฉีดมี<br/>@Qualifier ไหม?"}
+    QMatch{"มี Bean ชื่อ<br/>ตรงกันไหม?"}
+    UseQ["✅ ฉีดตัวที่ชื่อตรง<br/><small>@Qualifier ชนะ @Primary เสมอ</small>"]
+    QErr["❌ สตาร์ทไม่ขึ้น<br/><small>ไม่มี Bean ชื่อนั้น</small>"]
+    HasP{"มี Bean ที่ติด<br/>@Primary ไหม?"}
+    UseP["✅ ฉีดตัวที่เป็น @Primary"]
+    PErr["❌ สตาร์ทไม่ขึ้น<br/><small>expected single matching bean<br/>but found 2</small>"]
+
+    Start --> Count
+    Count -->|"ไม่เจอเลย"| Zero
+    Count -->|"1 ตัว"| One
+    Count -->|"หลายตัว"| HasQ
+    HasQ -->|"มี"| QMatch
+    QMatch -->|"ชื่อตรง"| UseQ
+    QMatch -->|"ไม่ตรง"| QErr
+    HasQ -->|"ไม่มี"| HasP
+    HasP -->|"มี 1 ตัว"| UseP
+    HasP -->|"ไม่มี"| PErr
+```
+
+#### @Qualifier vs @Primary — ใช้ตัวไหนดี?
+
+| | `@Primary` | `@Qualifier` |
+|---|---|---|
+| ติดที่ไหน | ที่ **Bean** (ตัวที่เป็นค่า default) | ที่ **จุดฉีด** (ที่ที่ต้องการเจาะจง) |
+| ความหมาย | "ถ้าไม่ระบุ ให้ใช้ฉัน" | "ฉันขอตัวนี้เท่านั้น" |
+| เหมาะกับ | มีตัวหลักชัดเจน ตัวอื่นเป็นข้อยกเว้น | แต่ละที่ต้องการคนละตัว |
+
+ใช้คู่กันได้: ติด `@Primary` ที่ `EmailSender` เป็น default แล้วจุดไหนอยากได้ SMS ค่อยใส่ `@Qualifier("sms")` เฉพาะจุด
+
+#### โบนัส: อยากได้ "ทุกตัว" — ฉีดเป็น List หรือ Map
+
+```java
+@Service
+public class BroadcastService {
+
+    private final List<NotificationSender> allSenders;   // ได้ทุก implementation
+
+    public BroadcastService(List<NotificationSender> allSenders) {
+        this.allSenders = allSenders;
+    }
+
+    public void broadcast(String to, String message) {
+        allSenders.forEach(s -> s.send(to, message));    // ส่งทุกช่องทาง
+    }
+}
+```
+
+```java
+// Map<ชื่อBean, ตัวBean> — เลือกตามเงื่อนไข runtime โดยไม่ต้องเขียน if-else
+@Service
+public class NotifyService {
+
+    private final Map<String, NotificationSender> senders;  // {"email": ..., "sms": ...}
+
+    public NotifyService(Map<String, NotificationSender> senders) {
+        this.senders = senders;
+    }
+
+    public void notify(String channel, String to, String message) {
+        senders.get(channel).send(to, message);   // user เลือก channel เองจาก request
+    }
+}
+```
+
+### 11.6 Error ยอดฮิตเกี่ยวกับ Bean
 
 | Error | สาเหตุส่วนใหญ่ | วิธีแก้ |
 |---|---|---|
