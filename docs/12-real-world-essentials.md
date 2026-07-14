@@ -1,4 +1,4 @@
-# บทที่ 11: สิ่งที่เจอบ่อยในงานจริง
+# บทที่ 12: สิ่งที่เจอบ่อยในงานจริง
 
 
 ## 1. Pagination — แบ่งหน้าข้อมูล
@@ -30,7 +30,7 @@ GET /api/products?page=0&size=20&sort=price,desc
 
 ## 2. JWT Authentication — login แบบ token
 
-Basic Auth ([บทที่ 7](07-security.md)) ส่ง username/password ทุก request — ใช้ฝึกได้แต่งานจริงใช้ **JWT**:
+Basic Auth ([บทที่ 8](08-security.md)) ส่ง username/password ทุก request — ใช้ฝึกได้แต่งานจริงใช้ **JWT**:
 login ครั้งเดียว ได้ token แล้วแนบ token แทนรหัสผ่านในทุก request ถัดไป
 
 ```mermaid
@@ -54,7 +54,7 @@ sequenceDiagram
 
 หัวใจของ token: **server ไม่ต้องจำอะไรเลย** — ข้อมูล user อยู่ใน token และมีลายเซ็นกันปลอมแปลง server แค่ตรวจลายเซ็นก็รู้ว่าใครส่งมา
 
-ส่วนประกอบที่ต้องเขียนเพิ่มจาก [บทที่ 7](07-security.md): `AuthController` (รับ login แจก token), `JwtService` (สร้าง/ตรวจ token — ใช้ library `jjwt`), และ `JwtAuthenticationFilter` (ดักทุก request ตรวจ header) — แนะนำหาบทความ "Spring Security JWT" ประกอบตอนลงมือทำ
+ส่วนประกอบที่ต้องเขียนเพิ่มจาก [บทที่ 8](08-security.md): `AuthController` (รับ login แจก token), `JwtService` (สร้าง/ตรวจ token — ใช้ library `jjwt`), และ `JwtAuthenticationFilter` (ดักทุก request ตรวจ header) — แนะนำหาบทความ "Spring Security JWT" ประกอบตอนลงมือทำ
 
 ## 3. Swagger / OpenAPI — เอกสาร API อัตโนมัติ
 
@@ -140,4 +140,4 @@ management.endpoints.web.exposure.include=health,info,metrics
 
 ---
 
-⬅️ [บทที่ 10: จากโค้ดฝึกหัดสู่งานจริง](10-production-ready.md) | [🏠 สารบัญ](../README.md) | [บทที่ 12: Annotation เพิ่มพลัง](12-power-annotations.md) ➡️
+⬅️ [บทที่ 11: จากโค้ดฝึกหัดสู่งานจริง](11-production-ready.md) | [🏠 สารบัญ](../README.md) | [บทที่ 13: Annotation เพิ่มพลัง](13-power-annotations.md) ➡️

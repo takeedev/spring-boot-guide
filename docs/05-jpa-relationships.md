@@ -69,9 +69,9 @@ erDiagram
 - **`fetch = FetchType.LAZY`** — ยังไม่โหลดข้อมูลฝั่งตรงข้ามจนกว่าจะเรียกใช้จริง (แนะนำให้ใช้เสมอ ป้องกัน query เกินจำเป็น)
 - **`cascade = CascadeType.ALL`** — ทำอะไรกับ User ให้ทำกับ orders ของเขาด้วย เช่น ลบ User → ลบ orders ตาม
 
-> ⚠️ ข้อควรระวังยอดฮิต: ถ้าแปลง Entity ที่มีความสัมพันธ์เป็น JSON ตรง ๆ อาจเกิด **loop ไม่รู้จบ** (User → Order → User → ...) ทางแก้ที่ดีคือสร้าง **DTO** (class แยกสำหรับตอบ response — ดูรายละเอียดใน [บทที่ 10](10-production-ready.md)) แทนการส่ง Entity ออกไปตรง ๆ
+> ⚠️ ข้อควรระวังยอดฮิต: ถ้าแปลง Entity ที่มีความสัมพันธ์เป็น JSON ตรง ๆ อาจเกิด **loop ไม่รู้จบ** (User → Order → User → ...) ทางแก้ที่ดีคือสร้าง **DTO** (class แยกสำหรับตอบ response — ดูรายละเอียดใน [บทที่ 11](11-production-ready.md)) แทนการส่ง Entity ออกไปตรง ๆ
 
 
 ---
 
-⬅️ [บทที่ 4: เริ่มโปรเจกต์แรก](04-first-project.md) | [🏠 สารบัญ](../README.md) | [บทที่ 6: การเขียน Test](06-testing.md) ➡️
+⬅️ [บทที่ 4: เริ่มโปรเจกต์แรก](04-first-project.md) | [🏠 สารบัญ](../README.md) | [บทที่ 6: JPA ขั้นกลาง](06-jpa-intermediate.md) ➡️

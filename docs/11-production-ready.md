@@ -1,4 +1,4 @@
-# บทที่ 10: จากโค้ดฝึกหัดสู่งานจริง
+# บทที่ 11: จากโค้ดฝึกหัดสู่งานจริง
 
 
 ## 1. DTO — อย่าส่ง Entity ออกไปตรง ๆ
@@ -168,4 +168,4 @@ public class UserService {
 
 ---
 
-⬅️ [บทที่ 9: เจาะลึก @Transactional](09-transactional.md) | [🏠 สารบัญ](../README.md) | [บทที่ 11: สิ่งที่เจอบ่อยในงานจริง](11-real-world-essentials.md) ➡️
+⬅️ [บทที่ 10: เจาะลึก @Transactional](10-transactional.md) | [🏠 สารบัญ](../README.md) | [บทที่ 12: สิ่งที่เจอบ่อยในงานจริง](12-real-world-essentials.md) ➡️

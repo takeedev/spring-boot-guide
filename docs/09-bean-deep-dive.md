@@ -1,4 +1,4 @@
-# บทที่ 8: เจาะลึก Bean — ทำงานยังไงกันแน่?
+# บทที่ 9: เจาะลึก Bean — ทำงานยังไงกันแน่?
 
 
 > ต่อยอดจากเรื่อง DI ใน [บทที่ 3](03-annotations.md) — เข้าใจ Bean แล้วจะเข้าใจว่าทำไม annotation ทั้งหมดถึงทำงานได้
@@ -268,4 +268,4 @@ public class NotifyService {
 
 ---
 
-⬅️ [บทที่ 7: Spring Security](07-security.md) | [🏠 สารบัญ](../README.md) | [บทที่ 9: เจาะลึก @Transactional](09-transactional.md) ➡️
+⬅️ [บทที่ 8: Spring Security](08-security.md) | [🏠 สารบัญ](../README.md) | [บทที่ 10: เจาะลึก @Transactional](10-transactional.md) ➡️

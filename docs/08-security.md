@@ -1,4 +1,4 @@
-# บทที่ 7: Spring Security เบื้องต้น
+# บทที่ 8: Spring Security เบื้องต้น
 
 
 เพิ่ม dependency แล้วทุก endpoint จะถูกล็อกทันที (ต้อง login ก่อนถึงเรียกได้):
@@ -87,9 +87,9 @@ flowchart TD
 > 💡 จำง่าย ๆ: **401 = ยังไม่ได้ login, 403 = login แล้วแต่ไม่มีสิทธิ์**
 
 ในงานจริง REST API มักใช้ **JWT (JSON Web Token)**: login ครั้งเดียวได้ token
-แล้วแนบ token ใน header `Authorization: Bearer <token>` ทุก request — ดูรายละเอียดต่อใน [บทที่ 11](11-real-world-essentials.md)
+แล้วแนบ token ใน header `Authorization: Bearer <token>` ทุก request — ดูรายละเอียดต่อใน [บทที่ 12](12-real-world-essentials.md)
 
 
 ---
 
-⬅️ [บทที่ 6: การเขียน Test](06-testing.md) | [🏠 สารบัญ](../README.md) | [บทที่ 8: เจาะลึก Bean](08-bean-deep-dive.md) ➡️
+⬅️ [บทที่ 7: การเขียน Test](07-testing.md) | [🏠 สารบัญ](../README.md) | [บทที่ 9: เจาะลึก Bean](09-bean-deep-dive.md) ➡️

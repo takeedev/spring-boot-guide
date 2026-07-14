@@ -22,18 +22,19 @@
 | บท | เนื้อหา | เหมาะกับ |
 |---|---|---|
 | [บทที่ 5: JPA Relationships](docs/05-jpa-relationships.md) | @OneToMany, @ManyToOne, foreign key, LAZY/cascade | เริ่มมีหลายตาราง |
-| [บทที่ 6: การเขียน Test](docs/06-testing.md) | @WebMvcTest, @DataJpaTest, @Mock vs @MockitoBean | อยากเทสเป็น |
-| [บทที่ 7: Spring Security](docs/07-security.md) | Authentication vs Authorization, 401 vs 403 | ต้องมี login/สิทธิ์ |
-| [บทที่ 8: เจาะลึก Bean](docs/08-bean-deep-dive.md) | IoC, lifecycle, singleton, @Qualifier/@Primary | อยากเข้าใจว่า Spring ทำงานยังไงจริง ๆ |
-| [บทที่ 9: เจาะลึก @Transactional](docs/09-transactional.md) | commit/rollback, กลไก proxy และกับดัก self-invocation | เริ่มแตะ database จริงจัง |
+| [บทที่ 6: JPA ขั้นกลาง](docs/06-jpa-intermediate.md) | N+1, @Query, Dirty Checking, Auditing, @Version, Projection | แอปเริ่มโต ข้อมูลเริ่มเยอะ 📌 |
+| [บทที่ 7: การเขียน Test](docs/07-testing.md) | @WebMvcTest, @DataJpaTest, @Mock vs @MockitoBean | อยากเทสเป็น |
+| [บทที่ 8: Spring Security](docs/08-security.md) | Authentication vs Authorization, 401 vs 403 | ต้องมี login/สิทธิ์ |
+| [บทที่ 9: เจาะลึก Bean](docs/09-bean-deep-dive.md) | IoC, lifecycle, singleton, @Qualifier/@Primary | อยากเข้าใจว่า Spring ทำงานยังไงจริง ๆ |
+| [บทที่ 10: เจาะลึก @Transactional](docs/10-transactional.md) | commit/rollback, กลไก proxy และกับดัก self-invocation | เริ่มแตะ database จริงจัง |
 
 ### ส่วนที่ 3: สู่งานจริง
 
 | บท | เนื้อหา | เหมาะกับ |
 |---|---|---|
-| [บทที่ 10: จากโค้ดฝึกหัดสู่งานจริง](docs/10-production-ready.md) | DTO, PostgreSQL + Flyway, Profiles, Logging, Lombok | ก่อนเข้าทีมจริง 📌 |
-| [บทที่ 11: สิ่งที่เจอบ่อยในงานจริง](docs/11-real-world-essentials.md) | Pagination, JWT, Swagger, RestClient, Actuator | ทำ API ให้คนอื่นใช้ |
-| [บทที่ 12: Annotation เพิ่มพลัง](docs/12-power-annotations.md) | @Scheduled, @Async, @Cacheable, @EventListener | เพิ่มความสามารถให้แอป |
+| [บทที่ 11: จากโค้ดฝึกหัดสู่งานจริง](docs/11-production-ready.md) | DTO, PostgreSQL + Flyway, Profiles, Logging, Lombok | ก่อนเข้าทีมจริง 📌 |
+| [บทที่ 12: สิ่งที่เจอบ่อยในงานจริง](docs/12-real-world-essentials.md) | Pagination, JWT, Swagger, RestClient, Actuator | ทำ API ให้คนอื่นใช้ |
+| [บทที่ 13: Annotation เพิ่มพลัง](docs/13-power-annotations.md) | @Scheduled, @Async, @Cacheable, @EventListener | เพิ่มความสามารถให้แอป |
 
 ### 🗂️ เปิดดูเร็ว ๆ
 
@@ -44,8 +45,9 @@
 ## 🧭 อ่านยังไงดี?
 
 - **มือใหม่หมด** → ไล่ตามลำดับ บทที่ 1 → 4 แล้วลงมือสร้างโปรเจกต์เลย จากนั้นค่อยกลับมาอ่านบทถัดไปตอนเจอเรื่องนั้นจริง
-- **พอมีพื้นแล้ว** → ข้ามไปส่วนที่ 2 ได้เลย แนะนำบทที่ 8–9 เป็นพิเศษ เพราะอธิบายกลไกเบื้องหลัง (Bean, proxy) ที่ทำให้เข้าใจ annotation ตัวอื่นทั้งหมด
-- **กำลังจะเข้าทีมจริง** → บทที่ 10 คือช่องว่างระหว่างโค้ดฝึกหัดกับโค้ดบริษัท อ่านก่อนวันแรกได้ยิ่งดี
+- **พอมีพื้นแล้ว** → ข้ามไปส่วนที่ 2 ได้เลย แนะนำบทที่ 9–10 เป็นพิเศษ เพราะอธิบายกลไกเบื้องหลัง (Bean, proxy) ที่ทำให้เข้าใจ annotation ตัวอื่นทั้งหมด
+- **แอปเริ่มช้า / ข้อมูลเริ่มเยอะ** → บทที่ 6 (N+1, Projection) คือคำตอบที่ควรอ่านก่อนไปโทษ database
+- **กำลังจะเข้าทีมจริง** → บทที่ 11 คือช่องว่างระหว่างโค้ดฝึกหัดกับโค้ดบริษัท อ่านก่อนวันแรกได้ยิ่งดี
 
 > 💡 ทุกบทมี link ⬅️ ➡️ ท้ายหน้า อ่านต่อเนื่องได้เหมือนหนังสือ
 

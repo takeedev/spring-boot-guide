@@ -19,6 +19,7 @@ Lombok            → @Getter, @Builder, @RequiredArgsConstructor, @Slf4j
 จัดการ Error      → @RestControllerAdvice, @ExceptionHandler
 อ่าน Config       → @Value, @ConfigurationProperties
 ความสัมพันธ์ตาราง  → @OneToMany, @ManyToOne, @JoinColumn
+JPA ขั้นกลาง       → @Query, @Modifying, @EntityGraph, @Version, @CreatedDate
 เขียน Test        → @Test, @BeforeEach, @Mock/@InjectMocks (JUnit/Mockito)
                     @SpringBootTest, @WebMvcTest, @DataJpaTest, @MockitoBean (Spring)
                     @ActiveProfiles, @WithMockUser (สภาพแวดล้อม/Security)
@@ -28,4 +29,4 @@ Security          → @EnableWebSecurity, @PreAuthorize
 
 ---
 
-⬅️ [บทที่ 12: Annotation เพิ่มพลัง](12-power-annotations.md) | [🏠 สารบัญ](../README.md)
+⬅️ [บทที่ 13: Annotation เพิ่มพลัง](13-power-annotations.md) | [🏠 สารบัญ](../README.md)

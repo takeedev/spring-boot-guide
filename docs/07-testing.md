@@ -1,4 +1,4 @@
-# บทที่ 6: การเขียน Test
+# บทที่ 7: การเขียน Test
 
 
 Spring Boot มีเครื่องมือเทสมาให้ครบ (อยู่ใน `spring-boot-starter-test` ซึ่งติดมากับทุกโปรเจกต์)
@@ -217,4 +217,4 @@ class AdminControllerTest {
 
 ---
 
-⬅️ [บทที่ 5: JPA Relationships](05-jpa-relationships.md) | [🏠 สารบัญ](../README.md) | [บทที่ 7: Spring Security](07-security.md) ➡️
+⬅️ [บทที่ 6: JPA ขั้นกลาง](06-jpa-intermediate.md) | [🏠 สารบัญ](../README.md) | [บทที่ 8: Spring Security](08-security.md) ➡️

@@ -1,4 +1,4 @@
-# บทที่ 12: Annotation เพิ่มพลัง — @Scheduled, @Async, @Cacheable, @EventListener
+# บทที่ 13: Annotation เพิ่มพลัง — @Scheduled, @Async, @Cacheable, @EventListener
 
 
 กลุ่มนี้เรียนง่ายสุด: แต่ละตัวเปิดความสามารถใหม่ให้ method ธรรมดา ๆ ทันที
@@ -49,7 +49,7 @@ public class NotificationService {
 
 use case คลาสสิก: สมัครสมาชิกเสร็จ → ตอบ 200 ให้ user ทันที ส่วนอีเมลต้อนรับค่อย ๆ ส่งเบื้องหลัง
 
-> ⚠️ `@Async` ทำงานผ่าน **proxy เหมือน @Transactional** ([บทที่ 9](09-transactional.md)) — เรียกจากใน class เดียวกัน (`this.xxx()`) จะไม่ async!
+> ⚠️ `@Async` ทำงานผ่าน **proxy เหมือน @Transactional** ([บทที่ 10](10-transactional.md)) — เรียกจากใน class เดียวกัน (`this.xxx()`) จะไม่ async!
 
 ## 3. @Cacheable / @CacheEvict — จำผลลัพธ์ ไม่ query ซ้ำ
 
@@ -136,9 +136,9 @@ flowchart LR
 | `@Cacheable` / `@CacheEvict` | `@EnableCaching` | จำผลลัพธ์ / ลบเมื่อข้อมูลเปลี่ยน |
 | `@EventListener` | — (ใช้ได้เลย) | ฟัง event แยก logic ออกจากกัน |
 
-> 📌 สังเกต: `@Scheduled`, `@Async`, `@Cacheable` ทั้งหมดทำงานผ่าน **proxy** แบบเดียวกับ `@Transactional` — กับดัก self-invocation ([บทที่ 9](09-transactional.md)) ใช้กับพวกนี้ด้วยทุกตัว
+> 📌 สังเกต: `@Scheduled`, `@Async`, `@Cacheable` ทั้งหมดทำงานผ่าน **proxy** แบบเดียวกับ `@Transactional` — กับดัก self-invocation ([บทที่ 10](10-transactional.md)) ใช้กับพวกนี้ด้วยทุกตัว
 
 
 ---
 
-⬅️ [บทที่ 11: สิ่งที่เจอบ่อยในงานจริง](11-real-world-essentials.md) | [🏠 สารบัญ](../README.md) | [Cheat Sheet](cheat-sheet.md) ➡️
+⬅️ [บทที่ 12: สิ่งที่เจอบ่อยในงานจริง](12-real-world-essentials.md) | [🏠 สารบัญ](../README.md) | [Cheat Sheet](cheat-sheet.md) ➡️
