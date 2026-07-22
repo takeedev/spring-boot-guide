@@ -80,6 +80,41 @@ public UserResponse getUser(@PathVariable Long id) { ... }
 
 ## 4. เรียก API ภายนอก — RestClient และ @HttpExchange
 
+### RestTemplate vs WebClient vs RestClient — เลือกตัวไหน?
+
+Spring มี HTTP client ให้ยิง API ภายนอกอยู่ **3 ตัว** ซึ่งเป็นวิวัฒนาการ 3 รุ่นที่แก้จุดอ่อนของกันและกัน:
+
+```
+RestTemplate (2009)  →  WebClient (2017)  →  RestClient (2023)
+   รุ่นแรก              รุ่น reactive         รุ่นล่าสุด
+   เขียนง่ายแต่เก่า      ทรงพลังแต่ซับซ้อน      เอาข้อดีทั้งคู่มารวม
+```
+
+| | RestTemplate | WebClient | RestClient |
+|---|---|---|---|
+| เปิดตัว | 2009 | 2017 | 2023 |
+| รูปแบบ | Sync | Async (+ sync ผ่าน `.block()`) | Sync |
+| API | เก่า สับสน | Fluent สวย | Fluent สวย |
+| ต้องรู้ reactive (`Mono`/`Flux`)? | ไม่ | **ต้อง** | ไม่ |
+| dependency | `web` | `webflux` | `web` |
+| สถานะ | maintenance mode | active | active (ตัวใหม่สุด) |
+
+**สรุปการเลือกสำหรับโปรเจกต์ใหม่:**
+
+```mermaid
+flowchart TD
+    Q{"งานของคุณเป็นแบบไหน?"}
+    A["✅ RestClient<br/><small>งานทั่วไป ยิง API แบบ sync (90% ของงาน)</small>"]
+    B["✅ WebClient<br/><small>ต้อง async/reactive/streaming จริง ๆ<br/>หรือทั้งแอปเป็น WebFlux อยู่แล้ว</small>"]
+    C["⚠️ RestTemplate<br/><small>มีโค้ดเก่าใช้อยู่ ยังไม่ต้องรีบย้าย<br/>แต่โปรเจกต์ใหม่ไม่ต้องเลือก</small>"]
+
+    Q -->|"ยิง API ธรรมดา รอผลได้"| A
+    Q -->|"ต้องการ non-blocking จริงจัง"| B
+    Q -->|"โค้ดเดิมที่มีอยู่แล้ว"| C
+```
+
+> ⚠️ **RestTemplate ยังไม่ถูก deprecated** (ยังใช้ได้ ไม่พัง) แต่อยู่ใน maintenance mode ตั้งแต่ Spring 5 — Spring แนะนำเองให้โปรเจกต์ใหม่ใช้ **RestClient** แทน
+
 **วิธีที่ 1: RestClient** (ตัวมาตรฐานปัจจุบัน แทน RestTemplate เดิม):
 
 ```java

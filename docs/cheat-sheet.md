@@ -24,6 +24,7 @@ JPA ขั้นกลาง       → @Query, @Modifying, @EntityGraph, @Versio
                     @SpringBootTest, @WebMvcTest, @DataJpaTest, @MockitoBean (Spring)
                     @ActiveProfiles, @WithMockUser (สภาพแวดล้อม/Security)
 Security          → @EnableWebSecurity, @PreAuthorize
+เรียก API ภายนอก   → RestClient (แนะนำ), WebClient (reactive), @HttpExchange
 ```
 
 
