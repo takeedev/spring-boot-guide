@@ -145,10 +145,64 @@ public interface WeatherApi {
 }
 ```
 
-```properties
-# Spring Boot 4 ตั้งค่า client ให้ผ่าน properties ได้เลย
-spring.http.client.service.weather.base-url=https://api.weather.com
+ลงทะเบียน interface เข้า "group" แล้วตั้ง base-url ให้ group นั้นใน properties:
+
+```java
+@SpringBootApplication
+@ImportHttpServices(group = "weather", types = WeatherApi.class)
+public class DemoApplication { ... }
 ```
+
+```properties
+# namespace คือ spring.http.serviceclient.<ชื่อ group>
+spring.http.serviceclient.weather.base-url=https://api.weather.com
+```
+
+### มี base-url หลายตัว? แยกด้วย group
+
+เรียก API หลายเจ้าในแอปเดียว (GitHub, Weather, Payment) เป็นเรื่องปกติ — หลักคือ **1 base-url = 1 interface = 1 group** แยกกันด้วย `@ImportHttpServices` (ใส่ซ้ำได้):
+
+```java
+@HttpExchange("/users")
+public interface GitHubApi {
+    @GetExchange("/{id}")
+    User getUser(@PathVariable String id);
+}
+
+@HttpExchange("/v1")
+public interface WeatherApi {
+    @GetExchange("/current")
+    Weather getWeather(@RequestParam String city);
+}
+```
+
+```java
+@SpringBootApplication
+@ImportHttpServices(group = "github",  types = GitHubApi.class)
+@ImportHttpServices(group = "weather", types = WeatherApi.class)
+public class DemoApplication { ... }
+```
+
+```properties
+# แต่ละ group มี base-url (และ timeout) ของตัวเอง
+spring.http.serviceclient.github.base-url=https://api.github.com
+spring.http.serviceclient.github.connect-timeout=2s
+
+spring.http.serviceclient.weather.base-url=https://api.weather.com
+spring.http.serviceclient.weather.read-timeout=5s
+```
+
+```java
+// inject ไปใช้ได้เลย แต่ละตัวยิงไป base-url ของมันเอง
+@Service
+@RequiredArgsConstructor
+public class MyService {
+    private final GitHubApi gitHubApi;    // → api.github.com
+    private final WeatherApi weatherApi;  // → api.weather.com
+}
+```
+
+> 💡 อยู่บน Spring Boot 3.x ที่ยังไม่มี `@ImportHttpServices`? สร้าง client ต่อ interface เองด้วย `HttpServiceProxyFactory` + `RestClientAdapter` ใน `@Configuration` — ตั้ง base-url ตอนสร้าง `RestClient` ของแต่ละ bean
 
 ## 5. Spring Boot Actuator — ตรวจสุขภาพแอป
 
